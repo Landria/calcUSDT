@@ -61,14 +61,14 @@ class CurrencyCalculator {
 
             // Фолбэк, если не удалось получить значения
             if (!this.rates.usdtEur) this.rates.usdtEur = 0.8556;
-            if (!this.rates.usdtRub) this.rates.usdtRub = 76.01;
+            if (!this.rates.usdtRub) this.rates.usdtRub = 70.01;
 
             this.updateRateDisplay();
             this.hideError();
         } catch (error) {
             this.showError('Не удалось загрузить актуальные курсы. Используются примерные значения.');
             this.rates.usdtEur = 0.8556;
-            this.rates.usdtRub = 76.01;
+            this.rates.usdtRub = 70.01;
             this.updateRateDisplay();
         }
     }

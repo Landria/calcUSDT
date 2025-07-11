@@ -95,6 +95,3 @@ func main() {
 	lambda.Start(handler)
 }
 
-// GOOS=linux GOARCH=amd64 go build -o bootstrap main.go
-//zip deployment.zip bootstrap
-// в поле handler указываем bootstrap
