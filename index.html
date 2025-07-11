@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .calculator-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .title {
+            text-align: center;
+            color: #4c1d95;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .currency-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 120px;
+            height: 40px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, #8b5cf6, #a855f7);
+            transition: .4s;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 32px;
+            width: 50px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(56px);
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4c1d95;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 18px;
+            background: white;
+            transition: all 0.3s ease;
+            color: #1f2937;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .recommendation {
+            color: #5b21b6;
+            font-size: 13px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            background: #ede9fe;
+            border-radius: 7px;
+            padding: 7px 12px;
+            display: inline-block;
+        }
+
+        .rates-info {
+            background: linear-gradient(45deg, #f3f4f6, #e5e7eb);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #8b5cf6;
+        }
+
+        .rate-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: #4b5563;
+            font-size: 14px;
+        }
+
+        .rate-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .rate-value {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .collapse-btn {
+            background: none;
+            border: none;
+            color: #7c3aed;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .collapse-arrow {
+            display: inline-block;
+            transition: transform 0.2s;
+            margin-right: 6px;
+        }
+
+        .collapsed .collapse-arrow {
+            transform: rotate(-90deg);
+        }
+
+        .breakdown-collapsed {
+            display: none;
+        }
+
+        .breakdown-expanded {
+            display: block;
+        }
+
+        .breakdown {
+            background: #faf5ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 10px;
+            border: 1px solid #e9d5ff;
+        }
+
+        .commission-summary {
+            color: #6d28d9;
+            font-weight: 600;
+            margin-bottom: 7px;
+            font-size: 14px;
+        }
+
+        .breakdown-title {
+            color: #6b21a8;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: #6b21a8;
+            font-size: 14px;
+        }
+
+        .breakdown-item:last-child {
+            margin-bottom: 0;
+            font-weight: 600;
+            border-top: 1px solid #e9d5ff;
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+
+        .footer-note.styled-note {
+            color: #6b21a8;
+            background: #f3f0fa;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-size: 15px;
+            margin-top: 18px;
+            margin-bottom: 10px;
+            border-left: 4px solid #8b5cf6;
+            text-align: center;
+        }
+
+        .telegram-link {
+            display: block;
+            text-align: center;
+            margin: 8px 0 18px 0;
+            font-size: 15px;
+        }
+
+        .telegram-link a {
+            color: #7c3aed;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .thanks {
+            text-align: center;
+            color: #7c3aed;
+            font-size: 16px;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        .disclaimer {
+            text-align: center;
+            color: #7c3aed;
+            font-size: 12px;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .calculator-container {
+                padding: 30px 10px;
+                margin: 10px;
+            }
+
+            .title {
+                font-size: 24px;
+            }
+
+            .input-field {
+                padding: 12px 16px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="calculator-container">
+        <h1 class="title">Калькулятор переводов</h1>
+
+        <div class="currency-toggle">
+            <label class="toggle-switch">
+                <input type="checkbox" id="currencyToggle">
+                <span class="slider">
+                    <span>EUR</span>
+                    <span>USD</span>
+                </span>
+            </label>
+        </div>
+
+        <div id="errorMessage" class="error" style="display: none;"></div>
+
+        <div class="input-group">
+            <label class="input-label" id="sourceLabel">Сумма в евро (EUR)</label>
+            <input type="number" id="sourceAmount" class="input-field" placeholder="0.00" step="0.01">
+            <div class="recommendation" id="recommendationAmount"></div>
+        </div>
+        <div class="input-group">
+            <label class="input-label">Получите в рублях (RUB)</label>
+            <input type="number" id="targetAmount" class="input-field" placeholder="0.00" step="0.01">
+        </div>
+
+        <div class="rates-info">
+            <div class="rate-item">
+                <span>Курс EUR/USDT:</span>
+                <span class="rate-value" id="eurUsdtRate">Загрузка...</span>
+            </div>
+            <div class="rate-item">
+                <span>Курс USDT/RUB:</span>
+                <span class="rate-value" id="usdtRubRate">Загрузка...</span>
+            </div>
+            <div class="rate-item">
+                <span>Ожидаемый курс EUR/RUB:</span>
+                <span class="rate-value" id="eurRubRate">Загрузка...</span>
+            </div>
+            <div class="rate-item">
+                <span>Последнее обновление:</span>
+                <span class="rate-value" id="lastUpdate">-</span>
+            </div>
+        </div>
+
+        <button class="collapse-btn collapsed" id="breakdownToggle">
+            <span class="collapse-arrow">&#9654;</span>
+            Детализация расчёта
+        </button>
+        <div class="breakdown breakdown-collapsed" id="breakdown">
+            <div class="commission-summary">
+                Примерная общая комиссия: <span id="totalCommissionValue">-</span>
+                (<span id="commissionPercentValue">-</span>%)
+            </div>
+            <div class="breakdown-title">Статьи расходов на перевод:</div>
+            <div class="breakdown-item">
+                <span>Комиссия пополнения (0.19%, мин 1€):</span>
+                <span id="depositFee">-</span>
+            </div>
+            <div class="breakdown-item">
+                <span>Комиссия биржи (0,2%):</span>
+                <span id="cryptoFee">-</span>
+            </div>
+            <div class="breakdown-item">
+                <span>Комиссия вывода:</span>
+                <span id="withdrawFee">-</span>
+            </div>
+            <div class="breakdown-item">
+                <span>Комиссия агента (1%, мин 1€)):</span>
+                <span id="agentFee">-</span>
+            </div>
+            <div class="breakdown-item">
+                <span>Налог (4%):</span>
+                <span id="taxFee">-</span>
+            </div>
+            <div class="breakdown-item">
+                <span>Резерв (1%):</span>
+                <span id="reserveFee">-</span>
+            </div>
+            <div class="breakdown-item" style="margin-top:12px;">
+                <span>Итого к получению:</span>
+                <span id="finalAmount">-</span>
+            </div>
+        </div>
+
+        <div class="footer-note styled-note">
+            Сумма налога не всегда может быть удержана из расчёта. В ряде случаев перевод возможен напрямую на счёт
+            получателя без удержания налога — для этого получателю необходимо быть на связи для подтверждения транзакции
+            во время перевода.
+        </div>
+        <div class="footer-note styled-note">
+            Сумма в рублях ориентировочна и может отличаться от фактической из-за колебаний курсов за время перевода (до
+            3 часов). В расчёте учтён резерв 1% для страхования курса, но при сильной волатильности этого может быть
+            недостаточно. Если курс останется стабильным, Вы получите сумму больше на этот резерв.
+        </div>
+        <div class="telegram-link">
+            Во всем вопросам ->&nbsp;
+            <a href="https://t.me/NatanieleDixon" target="_blank">t.me/NatanieleDixon</a>
+        </div>
+        <div class="disclaimer">
+            Этот калькулятор предназначен для частного использования. Если Вы нашли его случайно, считайте это или
+            знаком судьбы или недоразумением :)
+        </div>
+    </div>
+    <script src="calculator.js"></script>
+</body>
+
+</html>
