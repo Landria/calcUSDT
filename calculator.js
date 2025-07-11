@@ -53,7 +53,7 @@ class CurrencyCalculator {
             }
 
             // Получаем курс USDT/RUB с вашего сервера
-            const rubResponse = await fetch('http://localhost:8080/');
+            const rubResponse = await fetch('https://e7g46byx6xcd5d5pf3f4lrfzzy0ossuk.lambda-url.eu-north-1.on.aws/');
             if (rubResponse.ok) {
                 const rubText = await rubResponse.text();
                 this.rates.usdtRub = parseFloat(rubText);
