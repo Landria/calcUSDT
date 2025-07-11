@@ -75,14 +75,17 @@ func handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
 			Body:       err.Error(),
-			Headers:    map[string]string{"Content-Type": "text/plain"},
+			Headers: map[string]string{
+				"Content-Type":                "text/plain; charset=utf-8",
+				"Access-Control-Allow-Origin": "*",
+			},
 		}, nil
 	}
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
 		Body:       course,
 		Headers: map[string]string{
-			"Content-Type":                "text/plain",
+			"Content-Type":                "text/plain; charset=utf-8",
 			"Access-Control-Allow-Origin": "*",
 		},
 	}, nil
