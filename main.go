@@ -76,7 +76,6 @@ func handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 		allowOrigin = origin
 	}
 
-	// Обработка preflight (OPTIONS) запроса для CORS
 	if request.HTTPMethod == "OPTIONS" {
 		return events.APIGatewayProxyResponse{
 			StatusCode: 200,
@@ -84,6 +83,7 @@ func handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 				"Access-Control-Allow-Origin":  allowOrigin,
 				"Access-Control-Allow-Methods": "GET, OPTIONS",
 				"Access-Control-Allow-Headers": "Content-Type",
+				"Content-Type":                 "text/plain; charset=utf-8",
 			},
 			Body: "",
 		}, nil
