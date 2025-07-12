@@ -44,8 +44,6 @@ class CurrencyCalculator {
     async loadRates() {
         const min = 75.01;
         const max = 77.76;
-        // Получаем случайное число в диапазоне и округляем до двух знаков после запятой
-        const rubUsdtRubDefault = parseFloat((Math.random() * (max - min) + min).toFixed(2));
         
         try {
             // Получаем курс USDT/EUR с Bybit (API)
@@ -71,14 +69,14 @@ class CurrencyCalculator {
             }
 
             if (!this.rates.usdtEur) this.rates.usdtEur = 0.8556;
-            if (!this.rates.usdtRub) this.rates.usdtRub = rubUsdtRubDefault;
+            if (!this.rates.usdtRub) this.rates.usdtRub = 77.01;
 
             this.updateRateDisplay();
             this.hideError();
         } catch (error) {
             this.showError('Не удалось загрузить актуальные курсы. Используются примерные значения. За точным рассчётом рекомендуем обратитсья к автору!');
             this.rates.usdtEur = 0.8556;
-            this.rates.usdtRub = rubUsdtRubDefault;
+            this.rates.usdtRub = 77.01;
             this.updateRateDisplay();
         }
     }
