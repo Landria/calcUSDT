@@ -2,7 +2,7 @@ class CurrencyCalculator {
     constructor() {
         this.rates = {
             usdtEur: 0,
-            usdtRub: 0 // теперь с Binance P2P
+            usdtRub: 0, // теперь с Binance P2P
         };
         this.isUsdMode = false;
         this.usdCoefficient = 1.052;
@@ -42,10 +42,10 @@ class CurrencyCalculator {
         this.breakdownToggle.addEventListener('click', () => this.toggleBreakdown());
     }
     async loadRates() {
-        const min = 76.01;
-        const max = 78.76;
+        const min = 75.01;
+        const max = 77.76;
         // Получаем случайное число в диапазоне и округляем до двух знаков после запятой
-        const rubRateDefault = (Math.random() * (max - min) + min).toFixed(2);
+        const rubUsdtRubDefault = parseFloat((Math.random() * (max - min) + min).toFixed(2));
         
         try {
             // Получаем курс USDT/EUR с Bybit (API)
@@ -67,14 +67,14 @@ class CurrencyCalculator {
 
             // Фолбэк, если не удалось получить значения
             if (!this.rates.usdtEur) this.rates.usdtEur = 0.8556;
-            if (!this.rates.usdtRub) this.rates.usdtRub = 77.01;
+            if (!this.rates.usdtRub) this.rates.usdtRub = rubUsdtRubDefault;
 
             this.updateRateDisplay();
             this.hideError();
         } catch (error) {
             this.showError('Не удалось загрузить актуальные курсы. Используются примерные значения. За точным рассчётом рекомендуем обратитсья к автору!');
             this.rates.usdtEur = 0.8556;
-            this.rates.usdtRub = 77.01;
+            this.rates.usdtRub = rubUsdtRubDefault;
             this.updateRateDisplay();
         }
     }
