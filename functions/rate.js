@@ -86,6 +86,16 @@ export async function onRequest(context) {
   }
 }
 
-function getSignature(parameters, secret) {
-    return crypto.createHmac('sha256', secret).update(timestamp + API_KEY + recvWindow + parameters).digest('hex');
+// Web Crypto API HMAC SHA256 signature function
+async function getSignature(payload, secret) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, enc.encode(payload));
+  return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
