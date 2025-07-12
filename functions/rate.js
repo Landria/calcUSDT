@@ -2,9 +2,6 @@ export async function onRequest(context) {
   const API_KEY = context.env.BYBIT_API_KEY;
   const API_SECRET = context.env.BYBIT_API_SECRET;
 
-  var recvWindow = 5000;
-  var timestamp = Date.now().toString();
-
   // https://bybit-exchange.github.io/docs/p2p/ad/online-ad-list#request-parameters 
   // Параметры запроса
   const paramsObj = {
