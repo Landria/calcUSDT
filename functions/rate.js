@@ -2,14 +2,20 @@ export async function onRequest(context) {
   const API_KEY = context.env.BYBIT_API_KEY;
   const API_SECRET = context.env.BYBIT_API_SECRET;
 
-  //const params = 'coin=USDT&currency=RUB&type=SELL';
-  const params = 'coin=USDT';
-  const url = `https://api.bybit.com/v5/p2p/item/online`;
-  const timestamp = Date.now().toString();
-  const recvWindow = '5000';
+  // Параметры запроса
+  const paramsObj = {
+    coin: "USDT",
+    currency: "RUB",
+    type: "SELL"
+  };
+  const body = JSON.stringify(paramsObj);
 
-  // Формируем строку для подписи (см. документацию Bybit)
-  const signPayload = `${timestamp}${API_KEY}${recvWindow}${params}`;
+  const url = "https://api.bybit.com/v5/p2p/item/online";
+  const timestamp = Date.now().toString();
+  const recvWindow = "5000";
+
+  // Формируем строку для подписи: timestamp + api_key + recvWindow + body
+  const signPayload = `${timestamp}${API_KEY}${recvWindow}${body}`;
 
   // HMAC SHA256 через Web Crypto API
   async function sign(secret, payload) {
@@ -28,34 +34,26 @@ export async function onRequest(context) {
   try {
     const signature = await sign(API_SECRET, signPayload);
 
-    // Формируем тело запроса как application/x-www-form-urlencoded
-    const body = params;
-
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        'X-BAPI-API-KEY': API_KEY,
-        'X-BAPI-TIMESTAMP': timestamp,
-        'X-BAPI-RECV-WINDOW': recvWindow,
-        'X-BAPI-SIGN': signature
+        "Content-Type": "application/json",
+        "X-BAPI-API-KEY": API_KEY,
+        "X-BAPI-TIMESTAMP": timestamp,
+        "X-BAPI-RECV-WINDOW": recvWindow,
+        "X-BAPI-SIGN": signature
       },
       body: body
     });
 
-    if (!response.ok) {
-      return new Response('Ошибка получения данных Bybit', {
-        status: 502,
-        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-      });
-    }
-
     const data = await response.json();
     const items = data.result?.items || [];
+
     if (!Array.isArray(items) || items.length === 0) {
-      return new Response('Нет офферов ' + JSON.stringify(data), {
-        status: 404,
-        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      // Возвращаем полный объект data, если нет офферов
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { "Content-Type": "application/json; charset=utf-8" }
       });
     }
 
@@ -66,20 +64,22 @@ export async function onRequest(context) {
       .reduce((min, price) => (price < min ? price : min), Infinity);
 
     if (!isFinite(minPrice)) {
-      return new Response('Нет цен', {
-        status: 404,
-        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { "Content-Type": "application/json; charset=utf-8" }
       });
     }
 
+    // Возвращаем минимальный курс как строку
     return new Response(minPrice.toString(), {
       status: 200,
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      headers: { "Content-Type": "text/plain; charset=utf-8" }
     });
+
   } catch (err) {
     return new Response('Ошибка сервера', {
       status: 500,
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      headers: { "Content-Type": "text/plain; charset=utf-8" }
     });
   }
 }
