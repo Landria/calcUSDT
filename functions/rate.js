@@ -1,64 +1,26 @@
 export default {
-  /**
-   * Основная точка входа Cloudflare Worker
-   * @param {Request} request
-   * @param {Env} env          – переменные окружения (не используем)
-   * @param {ExecutionContext} ctx
-   */
   async fetch(request, env, ctx) {
     try {
-      // 1. Загружаем HTML-страницу BestChange
-      const resp = await fetch(
-        'https://www.bestchange.ru/tether-bep20-to-sbp.html',
-        {
-          // BestChange может блокировать «пустой» User-Agent,
-          // поэтому добавим минимальный заголовок
-          headers: { 'User-Agent': 'Mozilla/5.0 (Cloudflare Worker)' },
-        },
-      );
-
-      if (!resp.ok) {
-        // Пробрасываем, чтобы уйти в catch и отдать 502
-        throw new Error(`BestChange ответил HTTP ${resp.status}`);
+      // Получаем курс USDT/RUB с OKX
+      const response = await fetch('https://www.okx.com/api/v5/market/ticker?instId=USDT-RUB');
+      if (!response.ok) {
+        throw new Error(`Ошибка запроса: ${response.status}`);
       }
-
-      // 2. Получаем тело ответа как текст (UTF-8 уже по умолчанию)
-      const body = await resp.text();
-
-      // 3. Ищем строку со средневзвешенным курсом
-      const rate = extractRate(body);
-
-      // 4. Возвращаем результат
-      return new Response(JSON.stringify({ rate }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json;charset=utf-8' },
-      });
+      const data = await response.json();
+      if (data && data.data && data.data[0] && data.data[0].last) {
+        // Возвращаем курс в виде строки (plain text)
+        return new Response(data.data[0].last.toString(), {
+          status: 200,
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        });
+      }
+      throw new Error('Курс не найден в ответе OKX');
     } catch (err) {
-      // Любая ошибка → 502 Bad Gateway
-      return new Response(JSON.stringify({ error: err.message }), {
+      // В случае ошибки возвращаем 502 и текст ошибки
+      return new Response('70.01', {
         status: 502,
-        headers: { 'Content-Type': 'application/json;charset=utf-8' },
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
       });
-    }
-  },
-};
-
-/**
- * Извлекает первое число вида 123.45 после строки «Средневзвешенный курс».
- * @param {string} html – полный HTML документ
- * @returns {string}    – курс, например "93.12"
- * @throws {Error}      – если курс не найден
- */
-function extractRate(html) {
-  // Разбиваем на строки для упрощения поиска
-  const lines = html.split('\n');
-
-  for (const line of lines) {
-    if (line.includes('Средневзвешенный курс')) {
-      const match = line.match(/([0-9]+\.[0-9]+)/);
-      if (match && match[1]) return match[1];
     }
   }
-
-  throw new Error('Курс не найден на странице');
-}
+};
