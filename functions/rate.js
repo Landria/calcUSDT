@@ -1,12 +1,13 @@
 export async function onRequest(context) {
   const API_KEY = context.env.BYBIT_API_KEY;
   const API_SECRET = context.env.BYBIT_API_SECRET;
-
+  
+  // https://bybit-exchange.github.io/docs/p2p/ad/online-ad-list#request-parameters 
   // Параметры запроса
   const paramsObj = {
-    coin: "USDT",
-    currency: "RUB",
-    type: "SELL"
+    tokenId: "USDT",
+    currencyId: "RUB",
+    side: 1,   // 0 - Покупка, 1- Продажа
   };
   const body = JSON.stringify(paramsObj);
 
