@@ -52,7 +52,7 @@ export async function onRequest(context) {
     const data = await response.json();
     const items = data.result?.items || [];
     if (!Array.isArray(items) || items.length === 0) {
-      return new Response('Нет офферов '+data, {
+      return new Response('Нет офферов ' + JSON.stringify(data), {
         status: 404,
         headers: { 'Content-Type': 'text/plain; charset=utf-8' }
       });
