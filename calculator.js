@@ -44,7 +44,7 @@ class CurrencyCalculator {
     async loadRates() {
         const min = 75.01;
         const max = 77.76;
-        
+
         try {
             // Получаем курс USDT/EUR с Bybit (API)
             const eurResponse = await fetch('https://api.bybit.com/v5/market/tickers?category=spot&symbol=USDTEUR');
@@ -64,8 +64,8 @@ class CurrencyCalculator {
             }
 
             // Фолбэк, если не удалось получить значения
-            if (!this.rates.usdtEur || !this.rates.usdtRub) { 
-                this.showError('Не удалось загрузить актуальные курсы. Используются примерные значения. За точным рассчётом рекомендуем обратитсья к автору!');
+            if (!this.rates.usdtEur || !this.rates.usdtRub) {
+                this.showError('Не удалось загрузить актуальные курсы. Используются примерные значения. За точным рассчётом рекомендуем обратитсья к t.me/NatanieleDixon');
             }
 
             if (!this.rates.usdtEur) this.rates.usdtEur = 0.8556;
@@ -74,7 +74,7 @@ class CurrencyCalculator {
             this.updateRateDisplay();
             this.hideError();
         } catch (error) {
-            this.showError('Не удалось загрузить актуальные курсы. Используются примерные значения. За точным рассчётом рекомендуем обратитсья к автору!');
+            this.showError('Не удалось загрузить актуальные курсы. Используются примерные значения. За точным рассчётом рекомендуем обратитсья к t.me/NatanieleDixon');
             this.rates.usdtEur = 0.8556;
             this.rates.usdtRub = 77.01;
             this.updateRateDisplay();
@@ -185,7 +185,6 @@ class CurrencyCalculator {
     }
     updateBreakdown(result, sourceAmount) {
         this.totalCommissionEl.textContent = `~€${result.totalCommission.toFixed(2)}`;
-        // Добавьте строку ниже:
         document.getElementById('commissionPercentValue').textContent = (result.eurAmount > 0)
             ? (result.totalCommission / result.eurAmount * 100).toFixed(2)
             : '-';
@@ -196,6 +195,11 @@ class CurrencyCalculator {
         this.taxFeeEl.textContent = `₽${result.taxAmount.toFixed(2)}`;
         this.reserveFeeEl.textContent = `₽${result.reserveAmount.toFixed(2)}`;
         this.finalAmountEl.textContent = `₽${result.finalAmount.toFixed(2)}`;
+
+        const finalNoTax = result.finalAmount + result.taxAmount;
+        let finalNoTaxEl = document.getElementById('finalAmountNoTax');
+        finalNoTaxEl.textContent = `₽${finalNoTax.toFixed(2)}`;
+
         this.breakdown.classList.add('breakdown-collapsed');
         this.breakdown.classList.remove('breakdown-expanded');
         this.breakdownToggle.classList.add('collapsed');

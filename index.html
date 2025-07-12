@@ -221,6 +221,19 @@
             font-size: 14px;
         }
 
+        .breakdown-item-prev {
+             display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: #6b21a8;
+            font-size: 14px;
+            margin-bottom: 0;
+            font-weight: 600;
+            border-top: 1px solid #e9d5ff;
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+
         .breakdown-item:last-child {
             margin-bottom: 0;
             font-weight: 600;
@@ -377,14 +390,18 @@
                 <span>Резерв (1%):</span>
                 <span id="reserveFee">-</span>
             </div>
-            <div class="breakdown-item" style="margin-top:12px;">
-                <span>Итого к получению:</span>
+             <div class="breakdown-item-prev" style="margin-top:12px;">
+                <span>Сумма без вычета налога:</span>
+                <span id="finalAmountNoTax">-</span>
+            </div>
+            <div class="breakdown-item">
+                <span>Сумма с вычетом налога:</span>
                 <span id="finalAmount">-</span>
             </div>
         </div>
 
         <div class="footer-note styled-note">
-            В ряде случаев, когда перевод возможен напрямую на счёт получателя, 4%, зарезервированные на уплату налога, 
+            В ряде случаев, когда перевод возможен напрямую на счёт получателя, 4%, зарезервированные на уплату налога,
             будут добавлены к итоговой сумме выплаты. Для этого важно быть на связи во время перевода для подтверждения!
         </div>
         <div class="footer-note styled-note">
