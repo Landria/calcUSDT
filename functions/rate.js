@@ -2,12 +2,12 @@ export async function onRequest(context) {
   const API_KEY = context.env.BYBIT_API_KEY;
   const API_SECRET = context.env.BYBIT_API_SECRET;
 
-  // https://bybit-exchange.github.io/docs/p2p/ad/online-ad-list#request-parameters 
-  // Параметры запроса
+  // Формируем тело запроса строго по документации
   const paramsObj = {
     tokenId: "USDT",
     currencyId: "RUB",
-    side: 1,   // 0 - Покупка, 1- Продажа
+    side: "1" // "1" — продажа USDT за RUB
+    // page и size можно добавить при необходимости
   };
   const body = JSON.stringify(paramsObj);
 
@@ -18,23 +18,22 @@ export async function onRequest(context) {
   // Формируем строку для подписи: timestamp + api_key + recvWindow + body
   const signPayload = `${timestamp}${API_KEY}${recvWindow}${body}`;
 
-  // // HMAC SHA256 через Web Crypto API
-  // async function sign(secret, payload) {
-  //   const enc = new TextEncoder();
-  //   const key = await crypto.subtle.importKey(
-  //     'raw',
-  //     enc.encode(secret),
-  //     { name: 'HMAC', hash: 'SHA-256' },
-  //     false,
-  //     ['sign']
-  //   );
-  //   const signature = await crypto.subtle.sign('HMAC', key, enc.encode(payload));
-  //   return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
-  // }
+  // HMAC SHA256 через Web Crypto API
+  async function sign(secret, payload) {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      enc.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    const signature = await crypto.subtle.sign('HMAC', key, enc.encode(payload));
+    return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
 
   try {
-    //const signature = await sign(API_SECRET, signPayload);
-    const signature = await getSignature(signPayload, API_SECRET);
+    const signature = await sign(API_SECRET, signPayload);
 
     const response = await fetch(url, {
       method: "POST",
@@ -59,7 +58,7 @@ export async function onRequest(context) {
       });
     }
 
-    // Ищем минимальную цену
+    // Ищем минимальную цену среди офферов
     const minPrice = items
       .map(item => parseFloat(item.price))
       .filter(price => !isNaN(price))
@@ -79,23 +78,9 @@ export async function onRequest(context) {
     });
 
   } catch (err) {
-    return new Response('Ошибка сервера' + err, {
+    return new Response('Ошибка сервера', {
       status: 500,
       headers: { "Content-Type": "text/plain; charset=utf-8" }
     });
   }
-}
-
-// Web Crypto API HMAC SHA256 signature function
-async function getSignature(payload, secret) {
-  const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    'raw',
-    enc.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  const signature = await crypto.subtle.sign('HMAC', key, enc.encode(payload));
-  return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
