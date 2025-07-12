@@ -79,7 +79,7 @@ export async function onRequest(context) {
     });
 
   } catch (err) {
-    return new Response('Ошибка сервера', {
+    return new Response('Ошибка сервера' + err, {
       status: 500,
       headers: { "Content-Type": "text/plain; charset=utf-8" }
     });
