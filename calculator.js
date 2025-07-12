@@ -66,6 +66,10 @@ class CurrencyCalculator {
             }
 
             // Фолбэк, если не удалось получить значения
+            if (!this.rates.usdtEur || !this.rates.usdtRub) { 
+                this.showError('Не удалось загрузить актуальные курсы. Используются примерные значения. За точным рассчётом рекомендуем обратитсья к автору!');
+            }
+
             if (!this.rates.usdtEur) this.rates.usdtEur = 0.8556;
             if (!this.rates.usdtRub) this.rates.usdtRub = rubUsdtRubDefault;
 
