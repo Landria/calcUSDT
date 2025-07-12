@@ -2,7 +2,8 @@ export async function onRequest(context) {
   const API_KEY = context.env.BYBIT_API_KEY;
   const API_SECRET = context.env.BYBIT_API_SECRET;
 
-  const params = 'coin=USDT&currency=RUB&type=SELL';
+  //const params = 'coin=USDT&currency=RUB&type=SELL';
+  const params = 'coin=USDT';
   const url = `https://api.bybit.com/v5/p2p/item/online`;
   const timestamp = Date.now().toString();
   const recvWindow = '5000';
@@ -33,7 +34,7 @@ export async function onRequest(context) {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=utf-8',
         'X-BAPI-API-KEY': API_KEY,
         'X-BAPI-TIMESTAMP': timestamp,
         'X-BAPI-RECV-WINDOW': recvWindow,
