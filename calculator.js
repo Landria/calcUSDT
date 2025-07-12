@@ -42,6 +42,11 @@ class CurrencyCalculator {
         this.breakdownToggle.addEventListener('click', () => this.toggleBreakdown());
     }
     async loadRates() {
+        const min = 76.01;
+        const max = 78.76;
+        // Получаем случайное число в диапазоне и округляем до двух знаков после запятой
+        const rubRateDefault = (Math.random() * (max - min) + min).toFixed(2);
+        
         try {
             // Получаем курс USDT/EUR с Bybit (API)
             const eurResponse = await fetch('https://api.bybit.com/v5/market/tickers?category=spot&symbol=USDTEUR');
@@ -53,24 +58,23 @@ class CurrencyCalculator {
             }
 
             // Получаем курс USDT/RUB с вашего сервера
-            //const rubResponse = await fetch('https://e7g46byx6xcd5d5pf3f4lrfzzy0ossuk.lambda-url.eu-north-1.on.aws/');
             const rubResponse = await fetch('/rate');
             if (rubResponse.ok) {
                 const rubText = await rubResponse.text();
                 this.rates.usdtRub = parseFloat(rubText);
-                console.log("Курс USDT/RUB:", this.rates.usdtRub);
+                console.log("Курс USDT/RUB:", this.rates.usdtRub - 10);
             }
 
             // Фолбэк, если не удалось получить значения
             if (!this.rates.usdtEur) this.rates.usdtEur = 0.8556;
-            if (!this.rates.usdtRub) this.rates.usdtRub = 77.01;
+            if (!this.rates.usdtRub) this.rates.usdtRub = rubRateDefault;
 
             this.updateRateDisplay();
             this.hideError();
         } catch (error) {
             this.showError('Не удалось загрузить актуальные курсы. Используются примерные значения. За точным рассчётом рекомендуем обратитсья к автору!');
             this.rates.usdtEur = 0.8556;
-            this.rates.usdtRub = 77.01;
+            this.rates.usdtRub = rubRateDefault;
             this.updateRateDisplay();
         }
     }
