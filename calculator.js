@@ -68,7 +68,7 @@ class CurrencyCalculator {
             this.updateRateDisplay();
             this.hideError();
         } catch (error) {
-            this.showError('Не удалось загрузить актуальные курсы. Используются примерные значения.');
+            this.showError('Не удалось загрузить актуальные курсы. Используются примерные значения. За точным рассчётом рекомендуем обратитсья к автору!');
             this.rates.usdtEur = 0.8556;
             this.rates.usdtRub = 70.01;
             this.updateRateDisplay();
