@@ -2,8 +2,10 @@ export async function onRequest(context) {
   const API_KEY = context.env.BYBIT_API_KEY;
   const API_SECRET = context.env.BYBIT_API_SECRET;
 
-  const params = 'coin=USDT&currency=RUB&type=SELL';
-  const url = `https://api.bybit.com/v5/p2p/item/online?${params}`;
+  //const params = 'coin=USDT&currency=RUB&type=SELL';
+  const params = 'category=option&symbol=USDT-12JUL25-25000-C';
+  // const url = `https://api.bybit.com/v5/p2p/item/online?${params}`;
+  const url = `https://api.bybit.com//v5/order/realtime?${params}`;
   const timestamp = Date.now().toString();
   const recvWindow = '5000';
 
