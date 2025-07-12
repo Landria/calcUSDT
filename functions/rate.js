@@ -1,22 +1,60 @@
 export async function onRequest(context) {
+  // Получаем ключи из переменных окружения
+  const API_KEY = context.env.BYBIT_API_KEY;
+  const API_SECRET = context.env.BYBIT_API_SECRET;
+
+  // Параметры запроса
+  const params = 'coin=USDT&currency=RUB&type=SELL';
+  const url = `https://api.bybit.com/v5/p2p/item/online?${params}`;
+  const timestamp = Date.now().toString();
+  const recvWindow = '5000';
+
+  // Формируем строку для подписи
+  const signPayload = `${timestamp}${API_KEY}${recvWindow}${params}`;
+
+  // Функция для HMAC SHA256 (Cloudflare Workers API)
+  async function sign(secret, payload) {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      enc.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    const signature = await crypto.subtle.sign('HMAC', key, enc.encode(payload));
+    return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
   try {
-    const response = await fetch('https://www.okx.com/api/v5/market/ticker?instId=USDT-RUB');
+    const signature = await sign(API_SECRET, signPayload);
+
+    // Делаем запрос к Bybit API
+    const response = await fetch(url, {
+      headers: {
+        'X-BAPI-API-KEY': API_KEY,
+        'X-BAPI-TIMESTAMP': timestamp,
+        'X-BAPI-RECV-WINDOW': recvWindow,
+        'X-BAPI-SIGN': signature
+      }
+    });
+
     if (!response.ok) {
-      throw new Error(`Ошибка запроса: ${response.status}`);
-    }
-    const data = await response.json();
-    if (data && data.data && data.data[0] && data.data[0].last) {
-      return new Response(data.data[0].last.toString(), {
-        status: 200,
-        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      return new Response(JSON.stringify({ error: `Bybit API error: ${response.status}` }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json;charset=utf-8' }
       });
     }
-    throw new Error('Курс не найден в ответе OKX');
+
+    const data = await response.json();
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json;charset=utf-8' }
+    });
   } catch (err) {
-    console.error('Ошибка при получении курса USDT/RUB:', err);
-    return new Response('70,01', {
-      status: 502,
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json;charset=utf-8' }
     });
   }
 }
