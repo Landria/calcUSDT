@@ -1,9 +1,7 @@
 export async function onRequest(context) {
-  // Получаем ключи из переменных окружения
   const API_KEY = context.env.BYBIT_API_KEY;
   const API_SECRET = context.env.BYBIT_API_SECRET;
 
-  // Параметры запроса
   const params = 'coin=USDT&currency=RUB&type=SELL';
   const url = `https://api.bybit.com/v5/p2p/item/online?${params}`;
   const timestamp = Date.now().toString();
@@ -12,7 +10,7 @@ export async function onRequest(context) {
   // Формируем строку для подписи
   const signPayload = `${timestamp}${API_KEY}${recvWindow}${params}`;
 
-  // Функция для HMAC SHA256 (Cloudflare Workers API)
+  // HMAC SHA256 через Web Crypto API
   async function sign(secret, payload) {
     const enc = new TextEncoder();
     const key = await crypto.subtle.importKey(
@@ -29,7 +27,6 @@ export async function onRequest(context) {
   try {
     const signature = await sign(API_SECRET, signPayload);
 
-    // Делаем запрос к Bybit API
     const response = await fetch(url, {
       headers: {
         'X-BAPI-API-KEY': API_KEY,
@@ -40,21 +37,43 @@ export async function onRequest(context) {
     });
 
     if (!response.ok) {
-      return new Response(JSON.stringify({ error: `Bybit API error: ${response.status}` }), {
+      return new Response('Ошибка получения данных Bybit', {
         status: 502,
-        headers: { 'Content-Type': 'application/json;charset=utf-8' }
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
       });
     }
 
     const data = await response.json();
-    return new Response(JSON.stringify(data), {
+    // Проверяем структуру ответа
+    const items = data.result?.items || [];
+    if (!Array.isArray(items) || items.length === 0) {
+      return new Response('Нет офферов', {
+        status: 404,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      });
+    }
+
+    // Ищем минимальную цену
+    const minPrice = items
+      .map(item => parseFloat(item.price))
+      .filter(price => !isNaN(price))
+      .reduce((min, price) => (price < min ? price : min), Infinity);
+
+    if (!isFinite(minPrice)) {
+      return new Response('Нет цен', {
+        status: 404,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      });
+    }
+
+    return new Response(minPrice.toString(), {
       status: 200,
-      headers: { 'Content-Type': 'application/json;charset=utf-8' }
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' }
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response('Ошибка сервера', {
       status: 500,
-      headers: { 'Content-Type': 'application/json;charset=utf-8' }
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' }
     });
   }
 }
