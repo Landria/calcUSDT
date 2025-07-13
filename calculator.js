@@ -188,6 +188,9 @@ class CurrencyCalculator {
         document.getElementById('commissionPercentValue').textContent = (result.eurAmount > 0)
             ? (result.totalCommission / result.eurAmount * 100).toFixed(2)
             : '-';
+        document.getElementById('commissionPercentValueNoTax').textContent = (result.eurAmount > 0)
+            ? (result.totalCommission / result.eurAmount * 100).toFixed(2)-4
+            : '-';
         this.depositFeeEl.textContent = `€${result.depositFee.toFixed(2)}`;
         this.cryptoFeeEl.textContent = `€${result.cryptoFee.toFixed(2)}`;
         this.agentFeeEl.textContent = `€${result.agentFee.toFixed(2)}`;
