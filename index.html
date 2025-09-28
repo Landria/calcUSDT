@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,412 +13,364 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #7a3ada, #53277f);
+
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 20px;
+            color: #53277f;
         }
 
-        .calculator-container {
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 40px;
+            padding: 30px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            width: 100%;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
         }
 
         .title {
-            text-align: center;
-            color: #4c1d95;
-            font-size: 28px;
+            font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 18px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #7a3ada, #341157);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1rem;
         }
 
         .currency-toggle {
             display: flex;
+            align-items: center;
             justify-content: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
+            gap: 15px;
         }
 
         .toggle-switch {
             position: relative;
-            display: inline-block;
-            width: 120px;
-            height: 40px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
+            width: 60px;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
             cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, #8b5cf6, #a855f7);
-            transition: .4s;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
-            color: white;
-            font-weight: 600;
-            font-size: 12px;
+            transition: background 0.3s;
         }
 
-        .slider:before {
+        .toggle-switch.active {
+            background: #7a3ada;
+        }
+
+        .toggle-switch::after {
+            content: '';
             position: absolute;
-            content: "";
-            height: 32px;
-            width: 50px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 16px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
-        input:checked+.slider:before {
-            transform: translateX(56px);
+        .toggle-switch.active::after {
+            transform: translateX(30px);
         }
 
-        .input-group {
-            margin-bottom: 25px;
+        .toggle-label {
+            font-weight: 600;
+            color: #7a3ada;
         }
 
-        .input-label {
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
             display: block;
             margin-bottom: 8px;
-            color: #4c1d95;
             font-weight: 600;
-            font-size: 16px;
+            color: #35015f;
         }
 
-        .input-field {
+        .form-input {
             width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 18px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
             background: white;
-            transition: all 0.3s ease;
-            color: #1f2937;
         }
 
-        .input-field:focus {
+        .form-input:focus {
             outline: none;
-            border-color: #8b5cf6;
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        }
-
-        .recommendation {
-            color: #5b21b6;
-            font-size: 13px;
-            margin-top: 5px;
-            margin-bottom: 10px;
-            background: #ede9fe;
-            border-radius: 7px;
-            padding: 7px 12px;
-            display: inline-block;
+            border-color: #7a3ada;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .rates-info {
-            background: linear-gradient(45deg, #f3f4f6, #e5e7eb);
-            border-radius: 12px;
+            background: linear-gradient(135deg, #f8f9ff, #e8ebff);
+            border-radius: 15px;
             padding: 20px;
             margin-bottom: 25px;
-            border-left: 4px solid #8b5cf6;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .rates-title {
+            font-weight: 600;
+            color: #7a3ada;
+            margin-bottom: 15px;
+            text-align: center;
         }
 
         .rate-item {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 8px;
-            color: #4b5563;
-            font-size: 14px;
+            padding: 5px 0;
         }
 
-        .rate-item:last-child {
-            margin-bottom: 0;
+        .rate-label {
+            color: #666;
         }
 
         .rate-value {
             font-weight: 600;
-            color: #1f2937;
+            color: #35015f;
         }
 
-        .collapse-btn {
-            background: none;
-            border: none;
-            color: #7c3aed;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 15px;
-            margin-bottom: 10px;
+        .last-update {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .breakdown-section {
+            margin-top: 25px;
+        }
+
+        .breakdown-toggle {
             display: flex;
             align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            background: linear-gradient(135deg, #7a3ada, #53277f);
+
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        .breakdown-toggle:hover {
+            transform: translateY(-2px);
         }
 
         .collapse-arrow {
-            display: inline-block;
-            transition: transform 0.2s;
-            margin-right: 6px;
-        }
-
-        .collapsed .collapse-arrow {
-            transform: rotate(-90deg);
-        }
-
-        .breakdown-collapsed {
-            display: none;
-        }
-
-        .breakdown-expanded {
-            display: block;
+            transition: transform 0.3s;
         }
 
         .breakdown {
-            background: #faf5ff;
-            border-radius: 12px;
+            margin-top: 15px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .breakdown-collapsed {
+            max-height: 0;
+        }
+
+        .breakdown-expanded {
+            max-height: 500px;
+        }
+
+        .breakdown-content {
             padding: 20px;
-            margin-top: 10px;
-            border: 1px solid #e9d5ff;
-        }
-
-        .commission-summary {
-            color: #6d28d9;
-            font-weight: 600;
-            margin-bottom: 7px;
-            font-size: 14px;
-        }
-
-        .breakdown-title {
-            color: #6b21a8;
-            font-weight: 600;
-            margin-bottom: 15px;
-            font-size: 16px;
         }
 
         .breakdown-item {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            color: #6b21a8;
-            font-size: 14px;
-        }
-
-        .breakdown-item-prev {
-             display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            color: #6b21a8;
-            font-size: 14px;
-            margin-bottom: 0;
-            font-weight: 600;
-            border-top: 1px solid #e9d5ff;
-            padding-top: 8px;
-            margin-top: 8px;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
         }
 
         .breakdown-item:last-child {
-            margin-bottom: 0;
+            border-bottom: none;
             font-weight: 600;
-            border-top: 1px solid #e9d5ff;
-            padding-top: 8px;
-            margin-top: 8px;
+            background: rgba(102, 126, 234, 0.1);
+            margin: 10px -20px -20px -20px;
+            padding: 15px 20px;
         }
 
-        .footer-note.styled-note {
-            color: #6b21a8;
-            background: #f3f0fa;
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
             border-radius: 10px;
-            padding: 12px 18px;
-            font-size: 15px;
-            margin-top: 18px;
-            margin-bottom: 10px;
-            border-left: 4px solid #8b5cf6;
-            text-align: center;
+            margin-bottom: 20px;
+            border-left: 4px solid #c62828;
+            display: none;
         }
 
-        .telegram-link {
-            display: block;
+        .recommendation {
             text-align: center;
-            margin: 8px 0 18px 0;
-            font-size: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            color: #7a3ada;
+            font-weight: 600;
         }
 
-        .telegram-link a {
-            color: #7c3aed;
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #666;
+        }
+
+        .footer a {
+            color: #7a3ada;
             text-decoration: none;
             font-weight: 600;
         }
 
-        .thanks {
-            text-align: center;
-            color: #7c3aed;
-            font-size: 16px;
-            margin-top: 10px;
-            font-weight: 600;
-        }
-
-        .disclaimer {
-            text-align: center;
-            color: #7c3aed;
-            font-size: 12px;
-            margin-top: 10px;
-            font-weight: 600;
-        }
-
-        .error {
-            color: #dc2626;
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 20px;
-            font-size: 14px;
+        .footer a:hover {
+            text-decoration: underline;
         }
 
         @media (max-width: 768px) {
-            .calculator-container {
-                padding: 30px 10px;
+            .container {
                 margin: 10px;
+                padding: 20px;
             }
 
             .title {
-                font-size: 24px;
-            }
-
-            .input-field {
-                padding: 12px 16px;
-                font-size: 16px;
+                font-size: 1.5rem;
             }
         }
     </style>
 </head>
-
 <body>
-    <div class="calculator-container">
-        <h1 class="title">Калькулятор переводов</h1>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Калькулятор</h1>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
 
         <div class="currency-toggle">
-            <label class="toggle-switch">
-                <input type="checkbox" id="currencyToggle">
-                <span class="slider">
-                    <span>EUR</span>
-                    <span>USD</span>
-                </span>
-            </label>
+            <span class="toggle-label">EUR</span>
+            <div class="toggle-switch" id="toggleSwitch">
+                <input type="checkbox" id="currencyToggle" style="display: none;">
+            </div>
+            <span class="toggle-label">USD</span>
         </div>
 
-        <div id="errorMessage" class="error" style="display: none;"></div>
-
-        <div class="input-group">
-            <label class="input-label" id="sourceLabel">Сумма в евро (EUR)</label>
-            <input type="number" id="sourceAmount" class="input-field" placeholder="0.00" step="0.01">
-            <div class="recommendation" id="recommendationAmount"></div>
+        <div class="form-group">
+            <label class="form-label" id="sourceLabel">Сумма в евро (EUR)</label>
+            <input type="number" class="form-input" id="sourceAmount" placeholder="Введите сумму" step="0.01" min="0">
         </div>
-        <div class="input-group">
-            <label class="input-label">Получите в рублях (RUB)</label>
-            <input type="number" id="targetAmount" class="input-field" placeholder="0.00" step="0.01">
+
+        <div class="form-group">
+            <label class="form-label">Получите в рублях (RUB)</label>
+            <input type="number" class="form-input" id="targetAmount" placeholder="Сумма в рублях" step="0.01" min="0">
         </div>
 
         <div class="rates-info">
+            <div class="rates-title">Ожидаемые курсы</div>
+
             <div class="rate-item">
-                <span>Курс EUR/USDT:</span>
-                <span class="rate-value" id="eurUsdtRate">Загрузка...</span>
-            </div>
-            <div class="rate-item">
-                <span>Курс USDT/RUB:</span>
-                <span class="rate-value" id="usdtRubRate">Загрузка...</span>
-            </div>
-            <div class="rate-item">
-                <span>Ожидаемый курс EUR/RUB:</span>
+                <span class="rate-label">EUR/RUB:</span>
                 <span class="rate-value" id="eurRubRate">Загрузка...</span>
             </div>
+
             <div class="rate-item">
-                <span>Последнее обновление:</span>
-                <span class="rate-value" id="lastUpdate">-</span>
+                <span class="rate-label">USD/RUB:</span>
+                <span class="rate-value" id="usdRubRate">Загрузка...</span>
+            </div>
+
+            <div class="last-update">
+                Последнее обновление: <span id="lastUpdate">—</span>
             </div>
         </div>
 
-        <button class="collapse-btn collapsed" id="breakdownToggle">
-            <span class="collapse-arrow">&#9654;</span>
-            Детализация расчёта
-        </button>
-        <div class="breakdown breakdown-collapsed" id="breakdown">
-            <div class="commission-summary">
-                Стоимость перевода: <span id="totalCommissionValue">-</span>
-                (<span id="commissionPercentValue">-</span>%,
-                без налога <span id="commissionPercentValueNoTax">-</span>%)
-            </div>
-            <div class="breakdown-title">Расходные статьи:</div>
-            <div class="breakdown-item">
-                <span>Комиссия пополнения (0.19%, мин 1€):</span>
-                <span id="depositFee">-</span>
-            </div>
-            <div class="breakdown-item">
-                <span>Комиссия биржи (0,2%):</span>
-                <span id="cryptoFee">-</span>
-            </div>
-            <div class="breakdown-item">
-                <span>Комиссия вывода:</span>
-                <span id="withdrawFee">-</span>
-            </div>
-            <div class="breakdown-item">
-                <span>Комиссия агента (1%, мин 1€)):</span>
-                <span id="agentFee">-</span>
-            </div>
-            <div class="breakdown-item">
-                <span>Налог (4%):</span>
-                <span id="taxFee">-</span>
-            </div>
-            <div class="breakdown-item">
-                <span>Резерв (1%):</span>
-                <span id="reserveFee">-</span>
-            </div>
-             <div class="breakdown-item-prev" style="margin-top:12px;">
-                <span>Сумма без вычета налога:</span>
-                <span id="finalAmountNoTax">-</span>
-            </div>
-            <div class="breakdown-item">
-                <span>Сумма с вычетом налога:</span>
-                <span id="finalAmount">-</span>
+        <div class="breakdown-section">
+            <button class="breakdown-toggle" id="breakdownToggle">
+                <span>Детализация расчёта</span>
+                <span class="collapse-arrow">▼</span>
+            </button>
+
+            <div class="breakdown breakdown-collapsed" id="breakdown">
+                <div class="breakdown-content">
+                    <div class="breakdown-item">
+                        <span>Сумма без налога:</span>
+                        <span id="finalAmountNoTax">₽0.00</span>
+                    </div>
+
+                    <div class="breakdown-item">
+                        <span>Налог (4%):</span>
+                        <span id="taxFee">₽0.00</span>
+                    </div>
+
+                    <div class="breakdown-item">
+                        <span>Итого к получению:</span>
+                        <span id="finalAmount">₽0.00</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="footer-note styled-note">
-            В ряде случаев, когда перевод возможен напрямую на счёт получателя, 4%, зарезервированные на уплату налога,
-            будут добавлены к итоговой сумме выплаты. Для этого важно быть на связи во время перевода для подтверждения!
-        </div>
-        <div class="footer-note styled-note">
-            Сумма в рублях ориентировочна и может отличаться от фактической из-за колебаний курсов за время перевода (до
-            3 часов). В расчёте учтён резерв 1% для страхования курса, но при сильной волатильности этого может быть
-            недостаточно. Если курс останется стабильным, Вы получите сумму больше на этот резерв.
-        </div>
-        <div class="telegram-link">
-            Во всем вопросам ->&nbsp;
-            <a href="https://t.me/NatanieleDixon" target="_blank">t.me/NatanieleDixon</a>
-        </div>
-        <div class="disclaimer">
-            Этот калькулятор предназначен для частного использования. Если Вы нашли его случайно, считайте это или
-            знаком судьбы или недоразумением :)
+        <div class="recommendation" id="recommendationAmount"></div>
+
+        <div class="footer">
+            <p>Курсы обновляются автоматически каждые 30 секунд</p>
+            <p>Рассёты проведены по средневзвешенным курсам и учитывают платёжные комиссии. Итоговая сумма может незначительно отличаться в плюс.</p>
+            <p>По всем вопросам: <a href="https://t.me/NatanieleDixon" target="_blank">t.me/NatanieleDixon</a></p>
         </div>
     </div>
-    <script src="calculator.js"></script>
-</body>
 
+    <!-- Подключаем JSONP скрипт ЦБ РФ -->
+    <script src="https://www.cbr-xml-daily.ru/daily_jsonp.js" async></script>
+    <script src="calculator.js"></script>
+
+    <script>
+        // Обработка переключателя валют
+        document.getElementById('toggleSwitch').addEventListener('click', function() {
+            const checkbox = document.getElementById('currencyToggle');
+            const toggle = document.getElementById('toggleSwitch');
+
+            checkbox.checked = !checkbox.checked;
+            toggle.classList.toggle('active', checkbox.checked);
+
+            // Триггерим событие change
+            checkbox.dispatchEvent(new Event('change'));
+        });
+    </script>
+</body>
 </html>

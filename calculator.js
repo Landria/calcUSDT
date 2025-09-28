@@ -1,17 +1,21 @@
 class CurrencyCalculator {
     constructor() {
         this.rates = {
-            usdtEur: 0,
-            usdtRub: 0, // теперь с Binance P2P
+            eurToRub: 0,
+            usdToRub: 0
         };
         this.isUsdMode = false;
-        this.usdCoefficient = 1.052;
         this.excludeTax = false;
         this.initializeElements();
         this.bindEvents();
         this.loadRates();
+        this.coefficients = {
+            eurCoeff: 0.89,
+            usdCoeff: 0.85
+        };
         setInterval(() => this.loadRates(), 30000);
     }
+
     initializeElements() {
         this.sourceAmountInput = document.getElementById('sourceAmount');
         this.targetAmountInput = document.getElementById('targetAmount');
@@ -20,80 +24,70 @@ class CurrencyCalculator {
         this.errorMessage = document.getElementById('errorMessage');
         this.breakdown = document.getElementById('breakdown');
         this.breakdownToggle = document.getElementById('breakdownToggle');
-        this.totalCommissionEl = document.getElementById('totalCommissionValue');
-        this.recommendationAmount = document.getElementById('recommendationAmount');
-        this.usdtEurRateEl = document.getElementById('usdtEurRate');
-        this.usdtRubRateEl = document.getElementById('usdtRubRate');
-        this.eurUsdtRateEl = document.getElementById('eurUsdtRate');
         this.eurRubRateEl = document.getElementById('eurRubRate');
+        this.usdRubRateEl = document.getElementById('usdRubRate');
         this.lastUpdateEl = document.getElementById('lastUpdate');
-        this.depositFeeEl = document.getElementById('depositFee');
-        this.cryptoFeeEl = document.getElementById('cryptoFee');
-        this.agentFeeEl = document.getElementById('agentFee');
-        this.withdrawFeeEl = document.getElementById('withdrawFee');
         this.taxFeeEl = document.getElementById('taxFee');
-        this.reserveFeeEl = document.getElementById('reserveFee');
         this.finalAmountEl = document.getElementById('finalAmount');
+        this.finalAmountNoTaxEl = document.getElementById('finalAmountNoTax');
+        this.recommendationAmount = document.getElementById('recommendationAmount');
     }
+
     bindEvents() {
         this.sourceAmountInput.addEventListener('input', () => this.calculateFromSource());
         this.targetAmountInput.addEventListener('input', () => this.calculateFromTarget());
         this.currencyToggle.addEventListener('change', () => this.toggleCurrency());
         this.breakdownToggle.addEventListener('click', () => this.toggleBreakdown());
     }
+
+    // Функция-обработчик для JSONP от ЦБ РФ
+    CBR_XML_Daily_Ru(rates) {
+        this.rates.eurToRub = rates.Valute.EUR.Value;
+        this.rates.usdToRub = rates.Valute.USD.Value;
+        this.updateRateDisplay();
+        this.hideError();
+        console.log('Курсы ЦБ РФ загружены:', this.rates);
+    }
+
     async loadRates() {
-        const min = 75.01;
-        const max = 77.76;
-
         try {
-            // Получаем курс USDT/EUR с Bybit (API)
-            const eurResponse = await fetch('https://api.bybit.com/v5/market/tickers?category=spot&symbol=USDTEUR');
-            if (eurResponse.ok) {
-                const eurData = await eurResponse.json();
-                if (eurData.result && eurData.result.list && eurData.result.list.length > 0) {
-                    this.rates.usdtEur = parseFloat(eurData.result.list[0].lastPrice);
-                }
+            // Подключаем JSONP скрипт для получения курсов ЦБ РФ
+            if (!window.CBR_XML_Daily_Ru) {
+                window.CBR_XML_Daily_Ru = (rates) => this.CBR_XML_Daily_Ru(rates);
             }
 
-            // Получаем курс USDT/RUB с вашего сервера
-            const rubResponse = await fetch('/rate');
-            if (rubResponse.ok) {
-                const rubText = await rubResponse.text();
-                this.rates.usdtRub = parseFloat(rubText);
-                console.log("Курс USDT/RUB:", this.rates.usdtRub - 10);
-            }
+            // Создаем новый script элемент для обновления данных
+            const script = document.createElement('script');
+            script.src = 'https://www.cbr-xml-daily.ru/daily_jsonp.js';
+            script.async = true;
+            document.head.appendChild(script);
 
-            // Фолбэк, если не удалось получить значения
-            if (!this.rates.usdtEur || !this.rates.usdtRub) {
-                this.showError('Не удалось загрузить актуальные курсы. Используются примерные значения. За точным рассчётом рекомендуем обратитсья к t.me/NatanieleDixon');
-            }
+            // Удаляем старый скрипт через секунду
+            setTimeout(() => {
+                document.head.removeChild(script);
+            }, 1000);
 
-            if (!this.rates.usdtEur) this.rates.usdtEur = 0.8556;
-            if (!this.rates.usdtRub) this.rates.usdtRub = 77.01;
-
-            this.updateRateDisplay();
-            this.hideError();
         } catch (error) {
-            this.showError('Не удалось загрузить актуальные курсы. Используются примерные значения. За точным рассчётом рекомендуем обратитсья к t.me/NatanieleDixon');
-            this.rates.usdtEur = 0.8556;
-            this.rates.usdtRub = 77.01;
+            this.showError('Не удалось загрузить актуальные курсы ЦБ РФ. Используются примерные значения.');
+            // Фолбэк значения
+            this.rates.eurToRub = 85.00;
+            this.rates.usdToRub = 75.00;
             this.updateRateDisplay();
         }
     }
 
     updateRateDisplay() {
-        const eurUsdt = this.rates.usdtEur > 0 ? (1 / this.rates.usdtEur) : 0;
-        const eurRub = eurUsdt * this.rates.usdtRub;
-        this.eurUsdtRateEl.textContent = eurUsdt ? eurUsdt.toFixed(6) : '—';
-        this.usdtRubRateEl.textContent = `₽${this.rates.usdtRub.toFixed(2)}`;
-        this.eurRubRateEl.textContent = eurRub ? `₽${eurRub.toFixed(4)}` : '—';
+        this.eurRubRateEl.textContent = this.getEurRate() ? `₽${this.getEurRate().toFixed(4)}` : '—';
+        this.usdRubRateEl.textContent = this.getUsdRate() ? `₽${this.getUsdRate().toFixed(4)}` : '—';
         this.lastUpdateEl.textContent = new Date().toLocaleTimeString('ru-RU');
     }
+
     toggleCurrency() {
         this.isUsdMode = this.currencyToggle.checked;
         this.sourceLabel.textContent = this.isUsdMode ? 'Сумма в долларах (USD)' : 'Сумма в евро (EUR)';
         if (this.sourceAmountInput.value) this.calculateFromSource();
     }
+
     toggleBreakdown() {
         const expanded = this.breakdown.classList.contains('breakdown-expanded');
         if (expanded) {
@@ -108,6 +102,7 @@ class CurrencyCalculator {
             this.breakdownToggle.querySelector('.collapse-arrow').style.transform = 'rotate(0deg)';
         }
     }
+
     calculateFromSource() {
         const sourceAmount = parseFloat(this.sourceAmountInput.value);
         if (!sourceAmount || sourceAmount <= 0) {
@@ -118,13 +113,13 @@ class CurrencyCalculator {
             this.recommendationAmount.textContent = '';
             return;
         }
-        let eurAmount = sourceAmount;
-        if (this.isUsdMode) eurAmount = sourceAmount / this.usdCoefficient;
-        const result = this.calculateEurToRub(eurAmount, this.excludeTax);
+
+        const result = this.calculateToRub(sourceAmount);
         this.targetAmountInput.value = result.finalAmount.toFixed(2);
         this.updateBreakdown(result, sourceAmount);
         this.updateRecommendation(sourceAmount);
     }
+
     calculateFromTarget() {
         const targetAmount = parseFloat(this.targetAmountInput.value);
         if (!targetAmount || targetAmount <= 0) {
@@ -135,95 +130,91 @@ class CurrencyCalculator {
             this.recommendationAmount.textContent = '';
             return;
         }
-        let eurAmount = this.estimateEurFromRub(targetAmount, this.excludeTax);
-        for (let i = 0; i < 5; i++) {
-            const result = this.calculateEurToRub(eurAmount, this.excludeTax);
-            const difference = targetAmount - result.finalAmount;
-            if (Math.abs(difference) < 0.01) break;
-            eurAmount += difference / (this.rates.usdtRub / this.rates.usdtEur * 0.85);
+
+        // Обратный расчет с учетом налога
+        let sourceAmount;
+        if (this.isUsdMode) {
+            // Для USD
+            sourceAmount = targetAmount / (this.getUsdRate() * 0.96); // 4% налог
+        } else {
+            // Для EUR
+            sourceAmount = targetAmount / (this.getEurRate() * 0.96); // 4% налог
         }
-        let sourceAmount = eurAmount;
-        if (this.isUsdMode) sourceAmount = eurAmount * this.usdCoefficient;
+
         this.sourceAmountInput.value = sourceAmount.toFixed(2);
-        const result = this.calculateEurToRub(eurAmount, this.excludeTax);
+        const result = this.calculateToRub(sourceAmount);
         this.updateBreakdown(result, sourceAmount);
         this.updateRecommendation(sourceAmount);
     }
-    calculateEurToRub(eurAmount, excludeTax) {
-        const depositFee = Math.max(eurAmount * 0.0019, 1);
-        const cryptoFee = eurAmount * 0.001; // 0.1%
-        const agentFee = Math.max(eurAmount * 0.01, 1); // 1% или минимум 1 евро
-        const eurAfterFees = eurAmount - depositFee - cryptoFee - agentFee;
-        const usdtAmount = eurAfterFees / this.rates.usdtEur;
-        const usdtAfterWithdraw = usdtAmount - 1;
-        let rubAmount = usdtAfterWithdraw * this.rates.usdtRub;
-        let taxAmount = 0;
-        if (!excludeTax) {
-            taxAmount = rubAmount * 0.04;
-            rubAmount -= taxAmount;
-        }
-        const reserveAmount = rubAmount * 0.01;
-        const finalAmount = rubAmount - reserveAmount;
 
-        let totalCommission = depositFee + cryptoFee + agentFee + (1 * this.rates.usdtEur);
-        if (!excludeTax) totalCommission += (taxAmount / this.rates.usdtRub * this.rates.usdtEur);
-        totalCommission += (reserveAmount / this.rates.usdtRub * this.rates.usdtEur);
+    calculateToRub(sourceAmount) {
+        let rubAmount;
+
+        if (this.isUsdMode) {
+            rubAmount = sourceAmount * this.getUsdRate();
+        } else {
+            rubAmount = sourceAmount * this.getEurRate();
+        }
+
+        // Рассчитываем налог 4%
+        const taxAmount = rubAmount * 0.04;
+        const finalAmount = rubAmount - taxAmount;
 
         return {
-            depositFee, cryptoFee, agentFee, withdrawFee: 1, taxAmount, reserveAmount,
+            rubAmountBeforeTax: rubAmount,
+            taxAmount: taxAmount,
             finalAmount: Math.max(0, finalAmount),
-            totalCommission: totalCommission,
-            eurAmount
+            sourceAmount: sourceAmount
         };
     }
-    estimateEurFromRub(rubAmount, excludeTax) {
-        let estimatedUsdt = rubAmount / this.rates.usdtRub;
-        if (!excludeTax) estimatedUsdt /= 0.95;
-        else estimatedUsdt /= 0.99;
-        const estimatedEur = (estimatedUsdt + 1) * this.rates.usdtEur;
-        return estimatedEur / 0.85;
-    }
-    updateBreakdown(result, sourceAmount) {
-        this.totalCommissionEl.textContent = `~€${result.totalCommission.toFixed(2)}`;
-        document.getElementById('commissionPercentValue').textContent = (result.eurAmount > 0)
-            ? (result.totalCommission / result.eurAmount * 100).toFixed(2)
-            : '-';
-        document.getElementById('commissionPercentValueNoTax').textContent = (result.eurAmount > 0)
-            ? (result.totalCommission / result.eurAmount * 100).toFixed(2)-4
-            : '-';
-        this.depositFeeEl.textContent = `€${result.depositFee.toFixed(2)}`;
-        this.cryptoFeeEl.textContent = `€${result.cryptoFee.toFixed(2)}`;
-        this.agentFeeEl.textContent = `€${result.agentFee.toFixed(2)}`;
-        this.withdrawFeeEl.textContent = `${result.withdrawFee} USDT`;
-        this.taxFeeEl.textContent = `₽${result.taxAmount.toFixed(2)}`;
-        this.reserveFeeEl.textContent = `₽${result.reserveAmount.toFixed(2)}`;
-        this.finalAmountEl.textContent = `₽${result.finalAmount.toFixed(2)}`;
 
-        const finalNoTax = result.finalAmount + result.taxAmount;
-        let finalNoTaxEl = document.getElementById('finalAmountNoTax');
-        finalNoTaxEl.textContent = `₽${finalNoTax.toFixed(2)}`;
+    updateBreakdown(result, sourceAmount) {
+        this.taxFeeEl.textContent = `₽${result.taxAmount.toFixed(2)}`;
+        this.finalAmountEl.textContent = `₽${result.finalAmount.toFixed(2)}`;
+        this.finalAmountNoTaxEl.textContent = `₽${result.rubAmountBeforeTax.toFixed(2)}`;
 
         this.breakdown.classList.add('breakdown-collapsed');
         this.breakdown.classList.remove('breakdown-expanded');
         this.breakdownToggle.classList.add('collapsed');
         this.breakdownToggle.querySelector('.collapse-arrow').style.transform = 'rotate(-90deg)';
     }
+
     updateRecommendation(sourceAmount) {
         if (!sourceAmount || sourceAmount <= 0) {
             this.recommendationAmount.textContent = '';
             return;
         }
+
         const rounded = Math.ceil(sourceAmount);
         this.recommendationAmount.textContent = `Рекомендуемая сумма для перевода: ${this.isUsdMode ? '$' : '€'}${rounded}`;
     }
+
     showError(message) {
         this.errorMessage.textContent = message;
         this.errorMessage.style.display = 'block';
     }
+
     hideError() {
         this.errorMessage.style.display = 'none';
     }
+
+    getEurRate() {
+        return this.rates.eurToRub * this.coefficients.eurCoeff;
+    }
+
+    // Получить курс USD с коэффициентом
+    getUsdRate() {
+        return this.rates.usdToRub * this.coefficients.usdCoeff;
+    }
 }
+
+// Глобальная функция для JSONP callback
+function CBR_XML_Daily_Ru(rates) {
+    if (window.calculator) {
+        window.calculator.CBR_XML_Daily_Ru(rates);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    new CurrencyCalculator();
+    window.calculator = new CurrencyCalculator();
 });
