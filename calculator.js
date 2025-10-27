@@ -10,7 +10,7 @@ class CurrencyCalculator {
         this.bindEvents();
         this.loadRates();
         this.coefficients = {
-            eurCoeff: 0.89,
+            eurCoeff: 0.88,
             usdCoeff: 0.85
         };
         setInterval(() => this.loadRates(), 30000);
@@ -22,8 +22,8 @@ class CurrencyCalculator {
         this.currencyToggle = document.getElementById('currencyToggle');
         this.sourceLabel = document.getElementById('sourceLabel');
         this.errorMessage = document.getElementById('errorMessage');
-        this.breakdown = document.getElementById('breakdown');
-        this.breakdownToggle = document.getElementById('breakdownToggle');
+        // this.breakdown = document.getElementById('breakdown');
+        // this.breakdownToggle = document.getElementById('breakdownToggle');
         this.eurRubRateEl = document.getElementById('eurRubRate');
         this.usdRubRateEl = document.getElementById('usdRubRate');
         this.lastUpdateEl = document.getElementById('lastUpdate');
@@ -37,7 +37,7 @@ class CurrencyCalculator {
         this.sourceAmountInput.addEventListener('input', () => this.calculateFromSource());
         this.targetAmountInput.addEventListener('input', () => this.calculateFromTarget());
         this.currencyToggle.addEventListener('change', () => this.toggleCurrency());
-        this.breakdownToggle.addEventListener('click', () => this.toggleBreakdown());
+        // this.breakdownToggle.addEventListener('click', () => this.toggleBreakdown());
     }
 
     // Функция-обработчик для JSONP от ЦБ РФ
@@ -88,35 +88,35 @@ class CurrencyCalculator {
         if (this.sourceAmountInput.value) this.calculateFromSource();
     }
 
-    toggleBreakdown() {
-        const expanded = this.breakdown.classList.contains('breakdown-expanded');
-        if (expanded) {
-            this.breakdown.classList.remove('breakdown-expanded');
-            this.breakdown.classList.add('breakdown-collapsed');
-            this.breakdownToggle.classList.add('collapsed');
-            this.breakdownToggle.querySelector('.collapse-arrow').style.transform = 'rotate(-90deg)';
-        } else {
-            this.breakdown.classList.remove('breakdown-collapsed');
-            this.breakdown.classList.add('breakdown-expanded');
-            this.breakdownToggle.classList.remove('collapsed');
-            this.breakdownToggle.querySelector('.collapse-arrow').style.transform = 'rotate(0deg)';
-        }
-    }
+    // toggleBreakdown() {
+    //     const expanded = this.breakdown.classList.contains('breakdown-expanded');
+    //     if (expanded) {
+    //         this.breakdown.classList.remove('breakdown-expanded');
+    //         this.breakdown.classList.add('breakdown-collapsed');
+    //         this.breakdownToggle.classList.add('collapsed');
+    //         this.breakdownToggle.querySelector('.collapse-arrow').style.transform = 'rotate(-90deg)';
+    //     } else {
+    //         this.breakdown.classList.remove('breakdown-collapsed');
+    //         this.breakdown.classList.add('breakdown-expanded');
+    //         this.breakdownToggle.classList.remove('collapsed');
+    //         this.breakdownToggle.querySelector('.collapse-arrow').style.transform = 'rotate(0deg)';
+    //     }
+    // }
 
     calculateFromSource() {
         const sourceAmount = parseFloat(this.sourceAmountInput.value);
         if (!sourceAmount || sourceAmount <= 0) {
             this.targetAmountInput.value = '';
-            this.breakdown.classList.add('breakdown-collapsed');
-            this.breakdown.classList.remove('breakdown-expanded');
-            this.breakdownToggle.classList.add('collapsed');
+            // this.breakdown.classList.add('breakdown-collapsed');
+            // this.breakdown.classList.remove('breakdown-expanded');
+            // this.breakdownToggle.classList.add('collapsed');
             this.recommendationAmount.textContent = '';
             return;
         }
 
         const result = this.calculateToRub(sourceAmount);
         this.targetAmountInput.value = result.finalAmount.toFixed(2);
-        this.updateBreakdown(result, sourceAmount);
+        // this.updateBreakdown(result, sourceAmount);
         this.updateRecommendation(sourceAmount);
     }
 
@@ -124,9 +124,9 @@ class CurrencyCalculator {
         const targetAmount = parseFloat(this.targetAmountInput.value);
         if (!targetAmount || targetAmount <= 0) {
             this.sourceAmountInput.value = '';
-            this.breakdown.classList.add('breakdown-collapsed');
-            this.breakdown.classList.remove('breakdown-expanded');
-            this.breakdownToggle.classList.add('collapsed');
+            // this.breakdown.classList.add('breakdown-collapsed');
+            // this.breakdown.classList.remove('breakdown-expanded');
+            // this.breakdownToggle.classList.add('collapsed');
             this.recommendationAmount.textContent = '';
             return;
         }
@@ -142,8 +142,8 @@ class CurrencyCalculator {
         }
 
         this.sourceAmountInput.value = sourceAmount.toFixed(2);
-        const result = this.calculateToRub(sourceAmount);
-        this.updateBreakdown(result, sourceAmount);
+        // const result = this.calculateToRub(sourceAmount);
+        // this.updateBreakdown(result, sourceAmount);
         this.updateRecommendation(sourceAmount);
     }
 
@@ -173,10 +173,10 @@ class CurrencyCalculator {
         this.finalAmountEl.textContent = `₽${result.finalAmount.toFixed(2)}`;
         this.finalAmountNoTaxEl.textContent = `₽${result.rubAmountBeforeTax.toFixed(2)}`;
 
-        this.breakdown.classList.add('breakdown-collapsed');
-        this.breakdown.classList.remove('breakdown-expanded');
-        this.breakdownToggle.classList.add('collapsed');
-        this.breakdownToggle.querySelector('.collapse-arrow').style.transform = 'rotate(-90deg)';
+        // this.breakdown.classList.add('breakdown-collapsed');
+        // this.breakdown.classList.remove('breakdown-expanded');
+        // this.breakdownToggle.classList.add('collapsed');
+        // this.breakdownToggle.querySelector('.collapse-arrow').style.transform = 'rotate(-90deg)';
     }
 
     updateRecommendation(sourceAmount) {
