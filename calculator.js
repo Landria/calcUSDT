@@ -10,8 +10,8 @@ class CurrencyCalculator {
         this.bindEvents();
         this.loadRates();
         this.coefficients = {
-            eurCoeff: 0.88,
-            usdCoeff: 0.85
+            eurCoeff: 0.95,
+            usdCoeff: 0.95
         };
         setInterval(() => this.loadRates(), 30000);
     }
@@ -31,6 +31,7 @@ class CurrencyCalculator {
         this.finalAmountEl = document.getElementById('finalAmount');
         this.finalAmountNoTaxEl = document.getElementById('finalAmountNoTax');
         this.recommendationAmount = document.getElementById('recommendationAmount');
+        this.amountWithoutTaxEl = document.getElementById('amountWithoutTax');
     }
 
     bindEvents() {
@@ -110,12 +111,14 @@ class CurrencyCalculator {
             // this.breakdown.classList.add('breakdown-collapsed');
             // this.breakdown.classList.remove('breakdown-expanded');
             // this.breakdownToggle.classList.add('collapsed');
+            this.amountWithoutTaxEl.textContent = '₽0.00';
             this.recommendationAmount.textContent = '';
             return;
         }
 
         const result = this.calculateToRub(sourceAmount);
         this.targetAmountInput.value = result.finalAmount.toFixed(2);
+        this.amountWithoutTaxEl.textContent = `₽${result.rubAmountBeforeTax.toFixed(2)}`;
         // this.updateBreakdown(result, sourceAmount);
         this.updateRecommendation(sourceAmount);
     }
@@ -127,6 +130,7 @@ class CurrencyCalculator {
             // this.breakdown.classList.add('breakdown-collapsed');
             // this.breakdown.classList.remove('breakdown-expanded');
             // this.breakdownToggle.classList.add('collapsed');
+            this.amountWithoutTaxEl.textContent = '₽0.00';
             this.recommendationAmount.textContent = '';
             return;
         }
@@ -135,14 +139,15 @@ class CurrencyCalculator {
         let sourceAmount;
         if (this.isUsdMode) {
             // Для USD
-            sourceAmount = targetAmount / (this.getUsdRate() * 0.96); // 4% налог
+            sourceAmount = targetAmount / (this.getUsdRate() * 0.95); // 4% + 1% налог + комиссия
         } else {
             // Для EUR
-            sourceAmount = targetAmount / (this.getEurRate() * 0.96); // 4% налог
+            sourceAmount = targetAmount / (this.getEurRate() * 0.95); // 4% + 1% налог + комиссия
         }
 
         this.sourceAmountInput.value = sourceAmount.toFixed(2);
-        // const result = this.calculateToRub(sourceAmount);
+        const result = this.calculateToRub(sourceAmount);
+        this.amountWithoutTaxEl.textContent = `₽${result.rubAmountBeforeTax.toFixed(2)}`;
         // this.updateBreakdown(result, sourceAmount);
         this.updateRecommendation(sourceAmount);
     }
@@ -185,7 +190,8 @@ class CurrencyCalculator {
             return;
         }
 
-        const rounded = Math.ceil(sourceAmount);
+        const adjustment = (!this.isUsdMode && sourceAmount < 51) ? 2 : 0;
+        const rounded = Math.ceil(sourceAmount + adjustment);
         this.recommendationAmount.textContent = `Рекомендуемая сумма для перевода: ${this.isUsdMode ? '$' : '€'}${rounded}`;
     }
 
