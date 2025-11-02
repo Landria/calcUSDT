@@ -9,11 +9,16 @@ class CurrencyCalculator {
         this.initializeElements();
         this.bindEvents();
         this.loadRates();
-        this.coefficients = {
-            eurCoeff: 0.95,
-            usdCoeff: 0.95
-        };
         setInterval(() => this.loadRates(), 30000);
+    }
+
+    getCoeff(isUsd, amount) {
+        if (amount < 25) return isUsd ? 0.83 : 0.85;
+        else if (amount <= 50) return isUsd ? 0.85 : 0.87;
+        else if (amount <= 100) return isUsd ? 0.90 : 0.92;
+        else if (amount <= 200) return isUsd ? 0.93 : 0.95;
+        else if (amount <= 400) return isUsd ? 0.947 : 0.967;
+        else return isUsd ? 0.954 : 0.974;
     }
 
     initializeElements() {
@@ -79,8 +84,9 @@ class CurrencyCalculator {
     }
 
     updateRateDisplay() {
-        this.eurRubRateEl.textContent = this.getEurRate() ? `₽${this.getEurRate().toFixed(4)}` : '—';
-        this.usdRubRateEl.textContent = this.getUsdRate() ? `₽${this.getUsdRate().toFixed(4)}` : '—';
+        const currentAmount = parseFloat(this.sourceAmountInput.value) || 100;
+        this.eurRubRateEl.textContent = this.getEurRate(currentAmount) ? `₽${this.getEurRate(currentAmount).toFixed(4)}` : '—';
+        this.usdRubRateEl.textContent = this.getUsdRate(currentAmount) ? `₽${this.getUsdRate(currentAmount).toFixed(4)}` : '—';
         this.lastUpdateEl.textContent = new Date().toLocaleTimeString('ru-RU');
     }
 
@@ -89,6 +95,7 @@ class CurrencyCalculator {
         this.sourceLabel.textContent = this.isUsdMode ? 'Сумма в долларах (USD)' : 'Сумма в евро (EUR)';
         if (this.sourceAmountInput.value) this.calculateFromSource();
         if (this.amountWithoutTaxEl.value) this.calculateFromAmountWithoutTax();
+        this.updateRateDisplay();
     }
 
     // toggleBreakdown() {
@@ -123,6 +130,7 @@ class CurrencyCalculator {
         this.amountWithoutTaxEl.value = result.rubAmountBeforeTax.toFixed(2);
         // this.updateBreakdown(result, sourceAmount);
         this.updateRecommendation(sourceAmount);
+        this.updateRateDisplay();
     }
 
     calculateFromTarget() {
@@ -141,10 +149,16 @@ class CurrencyCalculator {
         let sourceAmount;
         if (this.isUsdMode) {
             // Для USD
-            sourceAmount = targetAmount / (this.getUsdRate() * 0.95); // 4% + 1% налог + комиссия
+            const baseRate = this.rates.usdToRub;
+            const sourceAmountApprox = targetAmount / (baseRate * 0.96 * 0.95);
+            const coeff = this.getCoeff(true, sourceAmountApprox);
+            sourceAmount = targetAmount / (baseRate * coeff * 0.96);
         } else {
             // Для EUR
-            sourceAmount = targetAmount / (this.getEurRate() * 0.95); // 4% + 1% налог + комиссия
+            const baseRate = this.rates.eurToRub;
+            const sourceAmountApprox = targetAmount / (baseRate * 0.96 * 0.95);
+            const coeff = this.getCoeff(false, sourceAmountApprox);
+            sourceAmount = targetAmount / (baseRate * coeff * 0.96);
         }
 
         this.sourceAmountInput.value = sourceAmount.toFixed(2);
@@ -152,6 +166,7 @@ class CurrencyCalculator {
         this.amountWithoutTaxEl.value = result.rubAmountBeforeTax.toFixed(2);
         // this.updateBreakdown(result, sourceAmount);
         this.updateRecommendation(sourceAmount);
+        this.updateRateDisplay();
     }
 
     calculateFromAmountWithoutTax() {
@@ -163,7 +178,11 @@ class CurrencyCalculator {
             return;
         }
 
-        const rate = this.isUsdMode ? this.getUsdRate() : this.getEurRate();
+        const isUsd = this.isUsdMode;
+        const baseRate = isUsd ? this.rates.usdToRub : this.rates.eurToRub;
+        const rateApprox = baseRate * 0.96;
+        const sourceAmountApprox = amountWithoutTax / rateApprox;
+        const rate = isUsd ? this.getUsdRate(sourceAmountApprox) : this.getEurRate(sourceAmountApprox);
         const sourceAmount = amountWithoutTax / rate;
         this.sourceAmountInput.value = sourceAmount.toFixed(2);
 
@@ -171,15 +190,16 @@ class CurrencyCalculator {
         this.targetAmountInput.value = finalAmount.toFixed(2);
 
         this.updateRecommendation(sourceAmount);
+        this.updateRateDisplay();
     }
 
     calculateToRub(sourceAmount) {
         let rubAmount;
 
         if (this.isUsdMode) {
-            rubAmount = sourceAmount * this.getUsdRate();
+            rubAmount = sourceAmount * this.getUsdRate(sourceAmount);
         } else {
-            rubAmount = sourceAmount * this.getEurRate();
+            rubAmount = sourceAmount * this.getEurRate(sourceAmount);
         }
 
         // Рассчитываем налог 4%
@@ -211,7 +231,7 @@ class CurrencyCalculator {
             return;
         }
 
-        const adjustment = (!this.isUsdMode && sourceAmount < 51) ? 2 : 0;
+        const adjustment = (!this.isUsdMode && sourceAmount < 50) ? 0 : 0;
         const rounded = Math.ceil(sourceAmount + adjustment);
         this.recommendationAmount.textContent = `Рекомендуемая сумма для перевода: ${this.isUsdMode ? '$' : '€'}${rounded}`;
     }
@@ -225,13 +245,13 @@ class CurrencyCalculator {
         this.errorMessage.style.display = 'none';
     }
 
-    getEurRate() {
-        return this.rates.eurToRub * this.coefficients.eurCoeff;
+    getEurRate(amount = 100) {
+        return this.rates.eurToRub * this.getCoeff(false, amount);
     }
 
     // Получить курс USD с коэффициентом
-    getUsdRate() {
-        return this.rates.usdToRub * this.coefficients.usdCoeff;
+    getUsdRate(amount = 100) {
+        return this.rates.usdToRub * this.getCoeff(true, amount);
     }
 }
 
